@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Import Report - FairShare</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+
+<body class="bg-gray-50 text-gray-900">
+
+<div class="max-w-5xl mx-auto px-6 py-12">
+
+    <a
+        href="{% url 'dashboard' %}"
+        class="text-gray-500 hover:text-gray-900 text-sm"
+    >
+        ← Back to Dashboard
+    </a>
+
+
+    <div class="mt-8 mb-8">
+
+        <h1 class="text-4xl font-bold tracking-tight">
+            Import Report
+        </h1>
+
+        <p class="text-gray-600 mt-2">
+            Contribution cleanup results for
+            <strong>{{ pool.name }}</strong>.
+        </p>
+
+    </div>
+
+
+    <!-- Summary -->
+
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+
+            <p class="text-sm text-gray-500">
+                Rows Received
+            </p>
+
+            <p class="text-2xl font-bold mt-2">
+                {{ report.received }}
+            </p>
+
+        </div>
+
+
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+
+            <p class="text-sm text-gray-500">
+                Imported
+            </p>
+
+            <p class="text-2xl font-bold mt-2">
+                {{ report.imported }}
+            </p>
+
+        </div>
+
+
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+
+            <p class="text-sm text-gray-500">
+                Duplicates
+            </p>
+
+            <p class="text-2xl font-bold mt-2">
+                {{ report.duplicates }}
+            </p>
+
+        </div>
+
+
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+
+            <p class="text-sm text-gray-500">
+                Merged
+            </p>
+
+            <p class="text-2xl font-bold mt-2">
+                {{ report.merged }}
+            </p>
+
+        </div>
+
+
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+
+            <p class="text-sm text-gray-500">
+                Rejected
+            </p>
+
+            <p class="text-2xl font-bold mt-2">
+                {{ report.rejected }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Imported -->
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+
+        <div class="p-7 border-b border-gray-100">
+
+            <h2 class="text-2xl font-bold">
+                Imported Contributions
+            </h2>
+
+            <p class="text-gray-500 mt-1">
+                These valid contributions were added to the pool.
+            </p>
+
+        </div>
+
+
+        {% if report.imported_rows %}
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full">
+
+                    <thead class="bg-gray-50">
+
+                        <tr>
+
+                            <th class="text-left px-7 py-4 text-xs font-semibold text-gray-500 uppercase">
+                                Row
+                            </th>
+
+                            <th class="text-left px-7 py-4 text-xs font-semibold text-gray-500 uppercase">
+                                Member
+                            </th>
+
+                            <th class="text-left px-7 py-4 text-xs font-semibold text-gray-500 uppercase">
+                                Amount
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for item in report.imported_rows %}
+
+                            <tr class="border-t border-gray-100">
+
+                                <td class="px-7 py-4">
+                                    {{ item.row }}
+                                </td>
+
+                                <td class="px-7 py-4 font-medium">
+                                    {{ item.name }}
+                                </td>
+
+                                <td class="px-7 py-4 font-semibold">
+                                    ₹{{ item.amount|floatformat:2 }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="p-8 text-gray-500">
+                No contributions were imported.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- Merged Names -->
+
+    {% if report.merged_rows %}
+
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+
+            <div class="p-7 border-b border-gray-100">
+
+                <h2 class="text-2xl font-bold">
+                    Merged Names
+                </h2>
+
+                <p class="text-gray-500 mt-1">
+                    Name variations matched existing members.
+                </p>
+
+            </div>
+
+
+            <div class="divide-y divide-gray-100">
+
+                {% for item in report.merged_rows %}
+
+                    <div class="px-7 py-5">
+
+                        <p class="font-medium">
+                            "{{ item.source_name }}"
+                        </p>
+
+                        <p class="text-gray-500 text-sm mt-1">
+                            merged into
+                            <strong>{{ item.matched_name }}</strong>
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- Rejected -->
+
+    {% if report.rejected_rows %}
+
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+
+            <div class="p-7 border-b border-gray-100">
+
+                <h2 class="text-2xl font-bold">
+                    Rejected Rows
+                </h2>
+
+                <p class="text-gray-500 mt-1">
+                    These rows were not imported.
+                </p>
+
+            </div>
+
+
+            <div class="divide-y divide-gray-100">
+
+                {% for item in report.rejected_rows %}
+
+                    <div class="px-7 py-5">
+
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+                            <div>
+
+                                <p class="font-semibold">
+                                    Row {{ item.row }}
+                                </p>
+
+                                <p class="text-gray-600 text-sm mt-1">
+                                    Name: {{ item.name|default:"—" }}
+                                </p>
+
+                                <p class="text-gray-600 text-sm">
+                                    Amount: {{ item.amount|default:"—" }}
+                                </p>
+
+                            </div>
+
+
+                            <p class="text-red-600 text-sm font-medium">
+                                {{ item.reason }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- Actions -->
+
+    <div class="flex flex-wrap gap-4">
+
+        <a
+            href="{% url 'dashboard' %}"
+            class="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition"
+        >
+            Return to Dashboard
+        </a>
+
+
+        <a
+            href="{% url 'import_contributions' %}"
+            class="bg-white border border-gray-200 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition"
+        >
+            Import Another File
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

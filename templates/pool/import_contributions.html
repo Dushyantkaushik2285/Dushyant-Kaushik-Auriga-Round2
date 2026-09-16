@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Import Contributions - FairShare</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+
+<body class="bg-gray-50 text-gray-900">
+
+<div class="max-w-3xl mx-auto px-6 py-12">
+
+    <a
+        href="{% url 'dashboard' %}"
+        class="text-gray-500 hover:text-gray-900 text-sm"
+    >
+        ← Back to Dashboard
+    </a>
+
+
+    <div class="mt-8 mb-8">
+
+        <h1 class="text-4xl font-bold tracking-tight">
+            Import Contributions
+        </h1>
+
+        <p class="text-gray-600 mt-2">
+            Import historical contribution data for
+            <strong>{{ pool.name }}</strong>.
+        </p>
+
+    </div>
+
+
+    <!-- What happens -->
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-7 mb-6">
+
+        <h2 class="text-xl font-bold">
+            What FairShare will do
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+
+            <div class="bg-gray-50 rounded-xl p-4">
+                <p class="font-semibold">
+                    Clean amounts
+                </p>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Handles values such as ₹1,500, Rs. 1500,
+                    INR 1,500 and 1.5k.
+                </p>
+            </div>
+
+
+            <div class="bg-gray-50 rounded-xl p-4">
+                <p class="font-semibold">
+                    Normalize names
+                </p>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Handles capitalization, spaces and
+                    close name variations.
+                </p>
+            </div>
+
+
+            <div class="bg-gray-50 rounded-xl p-4">
+                <p class="font-semibold">
+                    Remove duplicates
+                </p>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Identical normalized name and amount
+                    entries are counted once.
+                </p>
+            </div>
+
+
+            <div class="bg-gray-50 rounded-xl p-4">
+                <p class="font-semibold">
+                    Reject invalid rows
+                </p>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Invalid names or payment amounts are
+                    reported instead of imported.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- CSV Format -->
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-7 mb-6">
+
+        <h2 class="text-xl font-bold">
+            CSV Format
+        </h2>
+
+        <p class="text-gray-500 mt-2">
+            Your CSV should contain a name/member column
+            and an amount/payment column.
+        </p>
+
+
+        <div class="bg-gray-900 text-white rounded-xl p-5 mt-5 overflow-x-auto">
+
+            <pre class="text-sm">name,amount
+Dushyant,1500
+Rahul Sharma,"₹1,000"
+Rahul Sharm,500
+PRIYA,1.2k
+Modi,Rs. 2000
+Wrong Person,abc
+,1000</pre>
+
+        </div>
+
+    </div>
+
+
+    <!-- Upload -->
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            {% csrf_token %}
+
+
+            {% if form.non_field_errors %}
+
+                <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6">
+
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <label
+                for="{{ form.file.id_for_label }}"
+                class="block text-sm font-semibold mb-2"
+            >
+                Contribution CSV
+            </label>
+
+
+            {{ form.file }}
+
+
+            {% if form.file.help_text %}
+
+                <p class="text-gray-500 text-sm mt-2">
+                    {{ form.file.help_text }}
+                </p>
+
+            {% endif %}
+
+
+            {% if form.file.errors %}
+
+                <div class="text-red-600 text-sm mt-2">
+
+                    {% for error in form.file.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="flex gap-4 mt-7">
+
+                <button
+                    type="submit"
+                    class="flex-1 bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition"
+                >
+                    Import Contributions
+                </button>
+
+
+                <a
+                    href="{% url 'dashboard' %}"
+                    class="px-6 py-3 rounded-xl border border-gray-200 font-medium text-gray-700 hover:bg-gray-50 transition"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

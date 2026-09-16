@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Settlement - FairShare</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-900">
+
+    <div class="max-w-5xl mx-auto px-6 py-12">
+
+        <!-- Back -->
+        <a
+            href="{% url 'dashboard' %}"
+            class="text-gray-500 hover:text-gray-900 text-sm"
+        >
+            ← Back to Dashboard
+        </a>
+
+
+        <!-- Header -->
+        <div class="mt-8 mb-8">
+
+            <h1 class="text-4xl font-bold tracking-tight">
+                Settlement Plan
+            </h1>
+
+            <p class="text-gray-600 mt-2">
+                {{ pool.name }}
+            </p>
+
+        </div>
+
+
+        <!-- Summary -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                <div>
+                    <p class="text-gray-500 text-sm">
+                        Fair Share
+                    </p>
+
+                    <p class="text-2xl font-bold mt-2">
+                        ₹{{ pool.fair_share|floatformat:2 }}
+                    </p>
+                </div>
+
+
+                <div>
+                    <p class="text-gray-500 text-sm">
+                        Collected
+                    </p>
+
+                    <p class="text-2xl font-bold mt-2">
+                        ₹{{ pool.total_collected|floatformat:2 }}
+                    </p>
+                </div>
+
+
+                <div>
+                    <p class="text-gray-500 text-sm">
+                        Remaining
+                    </p>
+
+                    <p class="text-2xl font-bold mt-2">
+                        ₹{{ pool.remaining_amount|floatformat:2 }}
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Member Transfers -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+
+            <div class="p-7 border-b border-gray-100">
+
+                <h2 class="text-2xl font-bold">
+                    Who Pays Whom
+                </h2>
+
+                <p class="text-gray-500 mt-1">
+                    These transfers balance contributions between members.
+                </p>
+
+            </div>
+
+
+            {% if transfers %}
+
+                <div>
+
+                    {% for settlement in transfers %}
+
+                        <div class="px-7 py-6 border-b border-gray-100 last:border-b-0">
+
+                            <div class="flex items-center justify-between gap-6">
+
+                                <div>
+
+                                    <p class="font-semibold text-lg">
+                                        {{ settlement.from.name }}
+                                    </p>
+
+                                    <p class="text-gray-500 text-sm mt-1">
+                                        pays
+                                    </p>
+
+                                    <p class="font-semibold text-lg mt-1">
+                                        {{ settlement.to.name }}
+                                    </p>
+
+                                </div>
+
+
+                                <div class="text-xl font-bold whitespace-nowrap">
+                                    ₹{{ settlement.amount|floatformat:2 }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="p-10 text-center">
+
+                    <p class="font-semibold text-lg">
+                        No member-to-member settlement needed
+                    </p>
+
+                    <p class="text-gray-500 mt-2">
+                        Everyone is currently balanced based on the recorded contributions.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- Refund Section -->
+        {% if refunds %}
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+
+                <div class="p-7 border-b border-gray-100">
+
+                    <h2 class="text-2xl font-bold">
+                        Overpayment / Refund
+                    </h2>
+
+                    <p class="text-gray-500 mt-1">
+                        The pool has collected more than its target.
+                    </p>
+
+                </div>
+
+
+                <div class="p-7">
+
+                    {% if overfunded_amount > 0 %}
+
+                        <div class="bg-gray-50 rounded-xl p-5 mb-6">
+
+                            <p class="text-gray-600 text-sm">
+                                Amount collected above target
+                            </p>
+
+                            <p class="text-2xl font-bold mt-1">
+                                ₹{{ overfunded_amount|floatformat:2 }}
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% for refund in refunds %}
+
+                        <div class="flex items-center justify-between py-4 border-b border-gray-100 last:border-b-0">
+
+                            <div>
+
+                                <p class="font-semibold">
+                                    {{ refund.member.name }}
+                                </p>
+
+                                <p class="text-gray-500 text-sm mt-1">
+                                    should receive back from the pool
+                                </p>
+
+                            </div>
+
+
+                            <div class="font-bold text-xl">
+                                ₹{{ refund.amount|floatformat:2 }}
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- Underfunded State -->
+        {% if pool.total_collected < pool.target_amount %}
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-7 mb-8">
+
+                <h2 class="text-xl font-bold">
+                    Pool still needs contributions
+                </h2>
+
+                <p class="text-gray-500 mt-2">
+                    ₹{{ pool.remaining_amount|floatformat:2 }}
+                    is still needed to reach the target.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- Fully Balanced State -->
+        {% if pool.total_collected == pool.target_amount and not transfers %}
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-7 mb-8">
+
+                <h2 class="text-xl font-bold">
+                    Pool is balanced
+                </h2>
+
+                <p class="text-gray-500 mt-2">
+                    No additional member-to-member transfers are required.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- Back -->
+        <a
+            href="{% url 'dashboard' %}"
+            class="inline-block text-gray-600 hover:text-gray-900 font-medium"
+        >
+            ← Return to Dashboard
+        </a>
+
+    </div>
+
+</body>
+</html>

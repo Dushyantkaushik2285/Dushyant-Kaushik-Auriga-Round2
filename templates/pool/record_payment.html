@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Record Payment - FairShare</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-900">
+
+    <div class="max-w-2xl mx-auto px-6 py-12">
+
+        <!-- Back to Dashboard -->
+        <a
+            href="{% url 'dashboard' %}"
+            class="text-gray-500 hover:text-gray-900 text-sm"
+        >
+            ← Back to Dashboard
+        </a>
+
+
+        <!-- Page Header -->
+        <div class="mt-8 mb-8">
+
+            <h1 class="text-4xl font-bold tracking-tight">
+                Record Payment
+            </h1>
+
+            <p class="text-gray-600 mt-2">
+                Record a contribution made by a member.
+            </p>
+
+        </div>
+
+
+        <!-- Pool Information -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+
+            <div class="flex items-center justify-between gap-6">
+
+                <div>
+                    <p class="text-sm text-gray-500">
+                        Pool
+                    </p>
+
+                    <p class="text-lg font-semibold mt-1">
+                        {{ pool.name }}
+                    </p>
+                </div>
+
+
+                <div class="text-right">
+
+                    <p class="text-sm text-gray-500">
+                        Target
+                    </p>
+
+                    <p class="text-lg font-semibold mt-1">
+                        ₹{{ pool.target_amount|floatformat:2 }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Pool Fully Funded -->
+        {% if pool.total_collected >= pool.target_amount %}
+
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+
+                <div class="text-center">
+
+                    <div class="text-4xl mb-4">
+                        🎉
+                    </div>
+
+                    <h2 class="text-2xl font-bold">
+                        Target Reached
+                    </h2>
+
+                    <p class="text-gray-600 mt-3">
+                        The pool has already collected
+                        <strong>
+                            ₹{{ pool.total_collected|floatformat:2 }}
+                        </strong>.
+                    </p>
+
+                    <p class="text-gray-500 mt-2">
+                        No additional payments are required.
+                    </p>
+
+                    <a
+                        href="{% url 'dashboard' %}"
+                        class="inline-block mt-6 bg-gray-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition"
+                    >
+                        Return to Dashboard
+                    </a>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <!-- Remaining Amount -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+
+                <div class="flex items-center justify-between gap-6">
+
+                    <div>
+
+                        <p class="text-sm text-gray-500">
+                            Remaining to Collect
+                        </p>
+
+                        <p class="text-3xl font-bold mt-1">
+                            ₹{{ pool.remaining_amount|floatformat:2 }}
+                        </p>
+
+                    </div>
+
+
+                    <div class="text-right">
+
+                        <p class="text-sm text-gray-500">
+                            Collected
+                        </p>
+
+                        <p class="text-lg font-semibold mt-1">
+                            ₹{{ pool.total_collected|floatformat:2 }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Payment Form -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+
+                    <!-- Non-field Errors -->
+                    {% if form.non_field_errors %}
+
+                        <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6">
+
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- Member -->
+                    <div class="mb-6">
+
+                        <label
+                            for="{{ form.member.id_for_label }}"
+                            class="block text-sm font-semibold mb-2"
+                        >
+                            Member
+                        </label>
+
+                        {{ form.member }}
+
+                        {% if form.member.errors %}
+
+                            <div class="text-red-600 text-sm mt-2">
+
+                                {% for error in form.member.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Payment Amount -->
+                    <div class="mb-6">
+
+                        <div class="flex items-center justify-between mb-2">
+
+                            <label
+                                for="{{ form.amount.id_for_label }}"
+                                class="block text-sm font-semibold"
+                            >
+                                Payment Amount
+                            </label>
+
+                            <span class="text-xs text-gray-500">
+                                Maximum:
+                                ₹{{ pool.remaining_amount|floatformat:2 }}
+                            </span>
+
+                        </div>
+
+
+                        <input
+                            type="number"
+                            name="amount"
+                            id="{{ form.amount.id_for_label }}"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            placeholder="Enter amount"
+                            min="0.01"
+                            max="{{ pool.remaining_amount }}"
+                            step="0.01"
+                            value="{{ form.amount.value|default:'' }}"
+                            required
+                        >
+
+
+                        {% if form.amount.errors %}
+
+                            <div class="text-red-600 text-sm mt-2">
+
+                                {% for error in form.amount.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Information Box -->
+                    <div class="bg-gray-50 rounded-xl p-4 mb-6">
+
+                        <p class="text-sm text-gray-600">
+                            You can record any positive contribution up to the
+                            remaining pool amount.
+                        </p>
+
+                        <p class="text-sm text-gray-500 mt-1">
+                            Additional payments are automatically blocked once
+                            the target is reached.
+                        </p>
+
+                    </div>
+
+
+                    <!-- Buttons -->
+                    <div class="flex items-center gap-4">
+
+                        <button
+                            type="submit"
+                            class="flex-1 bg-gray-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition"
+                        >
+                            Record Payment
+                        </button>
+
+
+                        <a
+                            href="{% url 'dashboard' %}"
+                            class="px-6 py-3 rounded-xl border border-gray-200 font-medium text-gray-700 hover:bg-gray-50 transition"
+                        >
+                            Cancel
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+</html>
